@@ -1,0 +1,7 @@
+"2","Warning in gzfile(file, ""wb"") :"
+"2","
+ "
+"2"," cannot open compressed file 'C:/Users/Augus/OneDrive/Documents/Cursos/Data Science Specialization/08 Practical Machine Learning/practical-machine-learning-project/.Rproj.user/shared/notebooks/2D7F2BDD-practical-machine-learning/1/s/captofcvs1w82_t/b98b122a6aaa4026be070f845ba399ff.snapshot', probable reason 'No such file or directory'
+"
+"2","Error in gzfile(file, ""wb"") : cannot open the connection
+"

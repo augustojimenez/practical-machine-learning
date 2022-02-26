@@ -1,0 +1,3 @@
+"0","fitTree <- train(classe ~ ., data = training, method = ""rpart"","
+"0","                 trControl = control, tuneLength = 5)"
+"0","fancyRpartPlot(fitTree$finalModel)"

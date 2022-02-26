@@ -1,0 +1,15 @@
+"0","library(doParallel)
+"
+"2","Loading required package: foreach
+"
+"2","
+Attaching package: ‘foreach’
+
+"
+"2","The following objects are masked from ‘package:purrr’:
+
+    accumulate, when
+
+"
+"2","Loading required package: iterators
+"

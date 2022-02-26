@@ -1,0 +1,7 @@
+"0","cat(paste0(""out-of-sample error for each model"","
+"0","           ""Decision trees: "", round((1 - cfTree$overall[""Accuracy""]) * 100, 2),"
+"0","           ""\nRandom forest accuracy: "", round((1 - cfRF$overall[""Accuracy""]) * 100, 2),"
+"0","           ""\nGradient boosting accuracy: "", round((1 - cfGBM$overall[""Accuracy""]) * 100, 2)))"
+"1","out-of-sample error for each modelDecision trees: 46.95
+Random forest accuracy: 0.48
+Gradient boosting accuracy: 0.87"

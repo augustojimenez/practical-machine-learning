@@ -1,0 +1,4 @@
+"0","mod_gbm <- train(classe~., data=training, method=""gbm"", trControl = control, tuneLength = 5, verbose = F)
+"
+"2","Timing stopped at: 38.71 0.09 38.87
+"

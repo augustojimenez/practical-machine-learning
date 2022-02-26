@@ -1,0 +1,8 @@
+library(tidyverse)
+
+training.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testing.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+download.file(training.url, "./1_data/pml-training.csv")
+download.file(testing.url, "./1_data/pml-testing.csv")
+

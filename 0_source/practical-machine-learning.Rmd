@@ -1,0 +1,157 @@
+---
+title: "Practical Machine Learning"
+author: "Cesar Augusto JImenez Sanchez"
+date: "2/24/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Loading data and libraries
+
+Downloading (if necessary) and loading the data set of interest. Also, we load the libraries to be used:
+
+```{r load, warning = FALSE, message = FALSE}
+library(doParallel)
+library(tidyverse)
+library(parallel)
+library(ranger)
+library(rattle)
+library(caret)
+library(rpart)
+library(gbm)
+
+set.seed(2491)
+
+building.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+validation.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+building.file <- "./1_data/pml-training.csv"
+validation.file <- "./1_data/pml-validation.csv"
+
+if(!file.exists(building.file)) download.file(building.url, building.file)
+if(!file.exists(validation.file)) download.file(validation.url, validation.file)
+
+building <- read_csv(building.file)
+validation <- read_csv(validation.file)
+```
+
+We have two data sets, a validation and a building data set. The first contains 20 observations, which will be used to validate the final model accuracy. The second one is the building set, which will be split into two different data sets: one for training and the other one for testing the models fit:
+
+```{r, warning = FALSE, message = FALSE}
+dim(building)
+dim(validation)
+```
+
+### Partitioning data set into training and testing sets
+
+Now we proceed to split the building data set into the two said sets: 70% will go to the training data set and 30% will be assign to the testing one. But before doing so, we filter out all columns with a proportion of `NA`s greater than 90%, that have near zero variance and contain metadata:
+
+```{r partition}
+nzv <- nearZeroVar(building)
+
+building <- building %>%
+      # Selecting vars where proportion of NAs is less than 90%
+      select(where(function(x) mean(is.na(x)) <= 0.6),
+             -c(1:7), # Removing metadata
+             -all_of(nzv)) %>% # Removing vars with near zero variance
+      mutate(classe = as.factor(classe))
+
+inTrain <- createDataPartition(building$classe, p = 0.7, list = FALSE)
+
+training <- building[inTrain, ]
+testing <- building[-inTrain, ]
+```
+
+## Model fits
+
+We will fit two models: a random forest and a decision tree.
+
+### Setting control parameters for models
+
+First we set the training control parameters for all models with 3-fold cross validation:
+
+```{r control}
+cluster <- makeCluster(detectCores() - 1)
+registerDoParallel(cluster)
+
+control <- trainControl(method = "cv", number = 3,
+                        verboseIter = FALSE, allowParallel = TRUE)
+```
+
+### Decision trees
+
+#### Model
+
+```{r decision-trees, results = 'asis'}
+fitTree <- train(classe ~ ., data = training, method = "rpart",
+                 trControl = control, tuneLength = 5)
+fancyRpartPlot(fitTree$finalModel)
+```
+
+#### Confusion matrix:
+
+```{r cm-dt}
+predTree <- predict(fitTree, testing)
+cfTree <- confusionMatrix(predTree, testing$classe)
+cfTree
+```
+
+### Random forest
+
+#### Model
+
+```{r random-forest}
+fitRF <- train(classe ~ ., data = training, method = "ranger",
+                 trControl = control, tuneLength = 5)
+fitRF$finalModel
+```
+
+#### Confusion matrix
+
+```{r cm-rf}
+predRF <- predict(fitRF, testing)
+cfRF <- confusionMatrix(predRF, testing$classe)
+cfRF
+```
+
+### Gradient boosting machines
+
+#### Model
+
+```{r gbm}
+fitGBM <- train(classe ~ ., data = training, method = "gbm",
+                trControl = control, tuneLength = 5)
+fitGBM$finalModel
+```
+
+#### Confusion matrix
+
+```{r cm-gbm}
+predGBM <- predict(fitGBM, testing)
+cfGBM <- confusionMatrix(predGBM, testing$classe)
+cfGBM
+```
+
+
+
+## Results
+
+```{r results}
+cat(paste0("out-of-sample error for each model (in %)",
+           "\nDecision trees: ", round((1 - cfTree$overall["Accuracy"]) * 100, 2),
+           "\nRandom forest accuracy: ", round((1 - cfRF$overall["Accuracy"]) * 100, 2),
+           "\nGradient boosting accuracy: ", round((1 - cfGBM$overall["Accuracy"]) * 100, 2)))
+```
+
+## Predictions on validation set
+
+Using the model fit with the least out-of-sample error, we predicted the validation set and obtained the following results:
+
+```{r predictions}
+predict(fitRF, validation)
+```
+
